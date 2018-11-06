@@ -1,7 +1,7 @@
 # pylint: disable=W0108, R0914, W0703, C0111, E0601
 
 """
-Parser code.  Given a valid graphql string, it spits out a parse tree.
+Lexer and Parser code.  Given a valid graphql string, it spits out a parse tree.
 """
 
 from sly import Lexer #, Parser
@@ -16,11 +16,15 @@ class GraphQLLexer(Lexer):
         EXPONENT_PART,
         ZERO_VALUE,
         BLOCKSTRING_DELIMITER,
-        STRING_DELIMITER
+        STRING_DELIMITER,
+        QUERY,
+        TRUE,
+        FALSE,
+        NULL,
     }
     literals = {'!', '$', '(', ')', '...', ':', '=',
                 '@', '[', ']', '{', '|', '}'}
-    ignore = ',\ufeff\u0009\u0020'
+    ignore = ',\ufeff\u0009\u0020\n'
     ignore_comment = r'\#.*\n'
 
     ZERO_VALUE = r'[-]?0'
@@ -39,7 +43,10 @@ class GraphQLLexer(Lexer):
         return t
 
     NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
-
+    NAME['query'] = QUERY
+    NAME['true'] = TRUE
+    NAME['false'] = FALSE
+    NAME['null'] = NULL
 
 class GraphQLLexerBlockString(Lexer):
     tokens = {
