@@ -108,7 +108,7 @@ class GraphQLParser(Parser):
         'boolean_value',
         'null_value',
         'list_value',
-        # 'object_value',
+        'object_value',
     )
     def value(self, p):
         return Value(p[0])
@@ -132,24 +132,24 @@ class GraphQLParser(Parser):
     def list_start(self, p):
         return ListValue(p.value.value)
 
-    # # objects
-    #
-    # @_('object_start }')
-    # def object_value(self, p):
-    #     return ObjectValue(p.object_start.value)
-    #
-    # @_('"{" "}"')
-    # def object_value(self, p):
-    #     return ObjectValue()
-    #
-    # @_('object_start NAME ":" value')
-    # def object_start(self, p):
-    #     ObjectValue.value[p.NAME] = p.value.value
-    #     return ObjectValue.value
-    #
-    # @_('"{" NAME ":" value')
-    # def object_start(self, p):
-    #     return ObjectValue(ObjectField(p.NAME, p.value))
+    # objects
+
+    @_('object_start }')
+    def object_value(self, p):
+        return p.object_start
+
+    @_('"{" "}"')
+    def object_value(self, p):
+        return ObjectValue()
+
+    @_('object_start NAME ":" value')
+    def object_start(self, p):
+        p.object_start.value[p.NAME] = p.value.value
+        return p.object_start
+
+    @_('"{" NAME ":" value')
+    def object_start(self, p):
+        return ObjectValue(ObjectField(p.NAME, p.value.value))
 
     # nulls
 
