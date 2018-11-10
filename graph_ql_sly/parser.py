@@ -12,7 +12,7 @@ ESCAPE_DECODER = codecs.getdecoder("unicode_escape")
 
 
 def decode_escape(escaped_value):
-    """ translates escaped characters into their true character values """
+    """ translates escaped characters into their character values """
     return ESCAPE_DECODER(escaped_value)[0]
 
 
@@ -99,19 +99,93 @@ class GraphQLParser(Parser):
         GraphQLLexerString.tokens | \
         GraphQLLexerBlockString.tokens
 
-    # @_('executable_definition')
-    # def definition(self, p):
-    #     return
-
     # value stuff
+
+    @_(
+        'float_value',
+        'int_value',
+        'string_value',
+        'boolean_value',
+        'null_value',
+        'list_value',
+        # 'object_value',
+    )
+    def value(self, p):
+        return Value(p[0])
 
     # lists
 
-    # objects
+    @_('list_start "]"')
+    def list_value(self, p):
+        return p.list_start
+
+    @_('"[" "]"')
+    def list_value(self, p):
+        return ListValue()
+
+    @_('list_start value')
+    def list_start(self, p):
+        p.list_start.value.append(p.value.value)
+        return p.list_start
+
+    @_('"[" value')
+    def list_start(self, p):
+        return ListValue(p.value.value)
+
+    # # objects
+    #
+    # @_('object_start }')
+    # def object_value(self, p):
+    #     return ObjectValue(p.object_start.value)
+    #
+    # @_('"{" "}"')
+    # def object_value(self, p):
+    #     return ObjectValue()
+    #
+    # @_('object_start NAME ":" value')
+    # def object_start(self, p):
+    #     ObjectValue.value[p.NAME] = p.value.value
+    #     return ObjectValue.value
+    #
+    # @_('"{" NAME ":" value')
+    # def object_start(self, p):
+    #     return ObjectValue(ObjectField(p.NAME, p.value))
+
+    # nulls
+
+    @_("NULL")
+    def null_value(self, p):
+        return NullValue()
 
     # floats
 
+    @_("INTEGER_PART FRACTIONAL_PART EXPONENT_PART")
+    def float_value(self, p):
+        return FloatValue(integer_part=p.INTEGER_PART,
+                          fractional_part=p.FRACTIONAL_PART,
+                          exponent_part=p.EXPONENT_PART)
+
+    @_("INTEGER_PART FRACTIONAL_PART")
+    def float_value(self, p):
+        return FloatValue(integer_part=p.INTEGER_PART,
+                          fractional_part=p.FRACTIONAL_PART)
+
+    @_("INTEGER_PART EXPONENT_PART")
+    def float_value(self, p):
+        return FloatValue(integer_part=p.INTEGER_PART,
+                          fractional_part=p.EXPONENT_PART)
+
     # ints
+
+    @_("INTEGER_PART")
+    def int_value(self, p):
+        return IntValue(integer_part=p.INTEGER_PART)
+
+    # bools
+
+    @_("TRUE", "FALSE")
+    def boolean_value(self, p):
+        return BooleanValue(boolean_value=p[0])
 
     # string stuff
 

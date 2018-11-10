@@ -1,5 +1,5 @@
 """
-contains suplementary parse objects
+contains definitions of the supplementary parse objects
 """
 
 
@@ -7,7 +7,7 @@ class StringValue:
     """ StringValue """
 
     def __init__(self, string_characters):
-        self.string_characters = string_characters
+        self.value = string_characters
 
     def __repr__(self):
         return f'StringValue("{self.string_characters}")'
@@ -83,6 +83,19 @@ class Argument:
         self.value = value
 
 
+class Value:
+    """ Value """
+
+    def __init__(self, value):
+        self.value = value.value
+
+    def __repr__(self):
+        return f'Value("{self.value}")'
+
+    def __str__(self):
+        return f'"{self.value}"'
+
+
 class IntValue:
     """ IntValue """
 
@@ -92,6 +105,7 @@ class IntValue:
 
 class FloatValue:
     """ FloatValue """
+
     def __init__(self, integer_part, fractional_part='', exponent_part=''):
         self.value = float(f'{integer_part+fractional_part+exponent_part}')
 
@@ -105,12 +119,29 @@ class BooleanValue:
 
 class NullValue:
     """ NullValue """
-    def __init__(self, null_value):
+
+    def __init__(self):
         self.value = None
 
 
 class ListValue:
     """ ListValue """
 
-    def __init__(self, value):
-            self.values = [value]
+    def __init__(self, value=None):
+        self.value = [] if value is None else [value]
+
+
+class ObjectValue:
+    """ ObjectValue """
+
+    def __init__(self, object_field=None):
+        self.value = {} if object_field is None else \
+            {object_field.name: object_field.value}
+
+
+class ObjectField:
+    """ ObjectField """
+
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
