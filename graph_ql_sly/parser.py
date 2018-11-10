@@ -99,6 +99,24 @@ class GraphQLParser(Parser):
         GraphQLLexerString.tokens | \
         GraphQLLexerBlockString.tokens
 
+    # argument stuff
+    @_('argument_start ")"')
+    def arguments(self, p):
+        return p.argument_start
+
+    @_('argument_start argument')
+    def argument_start(self, p):
+        p.argument_start.arguments.append(p.argument)
+        return p.argument_start
+
+    @_('"(" argument')
+    def argument_start(self, p):
+        return Arguments(p.argument)
+
+    @_('NAME ":" value')
+    def argument(self, p):
+        return Argument(p.NAME, p.value)
+
     # value stuff
 
     @_(

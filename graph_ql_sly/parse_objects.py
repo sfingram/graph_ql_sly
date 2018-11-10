@@ -74,6 +74,9 @@ class Arguments:
     def __init__(self, argument):
         self.arguments = [argument]
 
+    def __repr__(self):
+        return f'Arguments({",".join(i.__repr__() for i in self.arguments)})'
+
 
 class Argument:
     """ Argument """
@@ -81,6 +84,9 @@ class Argument:
     def __init__(self, name, value):
         self.name = name
         self.value = value
+
+    def __repr__(self):
+        return f'Argument(name={self.name}, value={self.value})'
 
 
 class Value:
