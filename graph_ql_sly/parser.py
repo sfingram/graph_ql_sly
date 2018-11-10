@@ -4,7 +4,7 @@
 Lexer and Parser code.  Given a valid graphql string, it spits out a parse tree.
 """
 
-from sly import Lexer #, Parser
+from sly import Lexer, Parser
 
 
 class GraphQLLexer(Lexer):
@@ -83,5 +83,46 @@ class GraphQLLexerString(Lexer):
     ESCAPED_CHAR = r'[\\]["\\/bfnrt]'
     STRING_SOURCE = r'[\u0009\u000A\u000D\u0020-\u0021\u0023-\u005b\u005d-\uFFFF]+'
 
-# class GraphQLParser(Parser):
-#     tokens = GraphQLLexer.tokens
+
+class StringValue:
+    """ String value """
+    def __init__(self, arg):
+        self.arg = arg
+
+
+
+class GraphQLParser(Parser):
+    tokens = GraphQLLexer.tokens | \
+        GraphQLLexerBlockString.tokens | \
+        GraphQLLexerBlockString.tokens
+
+    # string stuff
+
+    @_('STRING_DELIMITER string_character STRING_DELIMITER')
+    def string_value(self, p):
+        # return StringValue(p.string)
+        return (p.STRING_DELIMITER0, p.string_character, p.STRING_DELIMITER1)
+
+    @_('STRING_DELIMITER empty STRING_DELIMITER')
+    def string_value(self, p):
+        return (p.STRING_DELIMITER0, p.STRING_DELIMITER1)
+
+    @_('')
+    def empty(self, p):
+        return ()
+
+    @_('STRING_SOURCE string_character')
+    def string_character(self, p):
+        return (p.STRING_SOURCE, p.string_character)
+
+    @_('ESCAPED_CHAR string_character')
+    def string_character(self, p):
+        return (p.ESCAPED_CHAR, p.string_character)
+
+    @_('STRING_SOURCE')
+    def string_character(self, p):
+        return (p.STRING_SOURCE)
+
+    @_('ESCAPED_CHAR')
+    def string_character(self, p):
+        return (p.ESCAPED_CHAR)
