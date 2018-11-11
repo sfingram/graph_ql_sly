@@ -99,6 +99,41 @@ class GraphQLParser(Parser):
         GraphQLLexerString.tokens | \
         GraphQLLexerBlockString.tokens
 
+    @_('selection_set_start "}"')
+    def selection_set(self, p):
+        return p.selection_set_start
+
+    @_('selection_set_start selection')
+    def selection_set_start(self, p):
+        p.selection_set_start.selections.append(p.selection)
+        return p.selection_set_start
+
+    @_('"{" selection')
+    def selection_set_start(self, p):
+        return SelectionSet(selection=p.selection)
+
+    @_('field')
+    def selection(self, p):
+        return Selection(p.field)
+
+    # field stuff
+
+    @_('NAME arguments selection_set')
+    def field(self, p):
+        return Field(p.NAME, arguments=p.arguments, selection_set=p.selection_set)
+
+    @_('NAME selection_set')
+    def field(self, p):
+        return Field(p.NAME, selection_set=p.selection_set)
+
+    @_('NAME arguments')
+    def field(self, p):
+        return Field(p.NAME, arguments=p.arguments)
+
+    @_('NAME')
+    def field(self, p):
+        return Field(p.NAME)
+
     # argument stuff
     @_('argument_start ")"')
     def arguments(self, p):
@@ -177,27 +212,27 @@ class GraphQLParser(Parser):
 
     # floats
 
-    @_("INTEGER_PART FRACTIONAL_PART EXPONENT_PART")
+    @_("int_value FRACTIONAL_PART EXPONENT_PART")
     def float_value(self, p):
-        return FloatValue(integer_part=p.INTEGER_PART,
+        return FloatValue(integer_part=p.int_value.value,
                           fractional_part=p.FRACTIONAL_PART,
                           exponent_part=p.EXPONENT_PART)
 
-    @_("INTEGER_PART FRACTIONAL_PART")
+    @_("int_value FRACTIONAL_PART")
     def float_value(self, p):
-        return FloatValue(integer_part=p.INTEGER_PART,
+        return FloatValue(integer_part=p.int_value.value,
                           fractional_part=p.FRACTIONAL_PART)
 
-    @_("INTEGER_PART EXPONENT_PART")
+    @_("int_value EXPONENT_PART")
     def float_value(self, p):
-        return FloatValue(integer_part=p.INTEGER_PART,
+        return FloatValue(integer_part=p.int_value.value,
                           fractional_part=p.EXPONENT_PART)
 
     # ints
 
-    @_("INTEGER_PART")
+    @_("INTEGER_PART", "ZERO_VALUE")
     def int_value(self, p):
-        return IntValue(integer_part=p.INTEGER_PART)
+        return IntValue(integer_part=p[0])
 
     # bools
 

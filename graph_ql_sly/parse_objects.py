@@ -10,10 +10,10 @@ class StringValue:
         self.value = string_characters
 
     def __repr__(self):
-        return f'StringValue("{self.string_characters}")'
+        return f'StringValue("{self.value}")'
 
     def __str__(self):
-        return f'"{self.string_characters}"'
+        return f'"{self.value}"'
 
 
 class Definition:
@@ -34,72 +34,133 @@ class OperationDefinition:
     """ OperationDefinition """
 
     def __init__(self, selection_set, operation_type='query', name=None,
-                 variable_definitions=None, directives=None):
+                 variable_definitions=None, directives=None, offset=''):
         self.selection_set = selection_set
         self.operation_type = operation_type
         self.name = name
         self.variable_definitions = variable_definitions
         self.directives = directives
+        self.offset = offset
+
+    def __repr__(self):
+        return f'OperationDefinition(operation_type)'
 
 
 class SelectionSet:
     """ SelectionSet """
 
-    def __init__(self, selections):
-        self.selections = selections
+    def __init__(self, selection, offset=''):
+        self.selections = [selection]
+        self.offset = offset
+
+    def __repr__(self):
+        selections_repr = f',\n{self.offset}\t'.join(i.__repr__() for i in self.selections)
+        return f'SelectionSet(\n{self.offset}\t{selections_repr}\n{self.offset})'
+
+    def set_offset(self, offset=''):
+        self.offset = offset
+        for selection in self.selections:
+            selection.set_offset(offset + '\t')
 
 
 class Selection:
     """ Selection """
 
-    def __init__(self, field):
+    def __init__(self, field, offset=''):
         self.field = field
+        self.offset = offset
+
+    def __repr__(self):
+        return f'Selection(\n{self.offset}\t{self.field!r}\n{self.offset})'
+
+    def set_offset(self, offset=''):
+        self.offset = offset
+        self.field.set_offset(offset + '\t')
 
 
 class Field:
     """ Field """
 
     def __init__(self, name, alias=None, arguments=None, directives=None,
-                 selection_set=None):
+                 selection_set=None, offset=''):
         self.name = name
         self.alias = alias
         self.arguments = arguments
         self.directives = directives
         self.selection_set = selection_set
+        self.offset = offset
+
+    def __repr__(self):
+        return f'Field(\n' + \
+            self.offset + f'\tname={self.name!r}, \n' +\
+            self.offset + f'\targuments={self.arguments!r}, \n' + \
+            self.offset + f'\tselection_set={self.selection_set!r}\n' + \
+            self.offset + ')'
+
+    def set_offset(self, offset=''):
+        self.offset = offset
+        if self.arguments:
+            self.arguments.set_offset(offset + '\t')
+        if self.selection_set:
+            self.selection_set.set_offset(offset + '\t')
 
 
 class Arguments:
     """ Arguments """
 
-    def __init__(self, argument):
+    def __init__(self, argument, offset=''):
         self.arguments = [argument]
+        self.offset = ''
 
     def __repr__(self):
-        return f'Arguments({",".join(i.__repr__() for i in self.arguments)})'
+        argument_repr = f',\n{self.offset}\t'.join(i.__repr__() for i in self.arguments)
+        return f'Arguments(\n{self.offset}\t{argument_repr}\n{self.offset})'
+
+    def set_offset(self, offset=''):
+        self.offset = offset
+        if self.arguments:
+            for argument in self.arguments:
+                argument.set_offset(offset + '\t')
 
 
 class Argument:
     """ Argument """
 
-    def __init__(self, name, value):
+    def __init__(self, name, value, offset=''):
         self.name = name
         self.value = value
+        self.offset = ''
 
     def __repr__(self):
-        return f'Argument(name={self.name}, value={self.value})'
+        return f'Argument(\n{self.offset}\tname={self.name},\n{self.offset}\tvalue={self.value}\n{self.offset})'
+
+    def set_offset(self, offset=''):
+        self.offset = offset
+        try:
+            self.value.set_offset(offset + '\t')
+        except AttributeError:
+            pass
 
 
 class Value:
     """ Value """
 
-    def __init__(self, value):
+    def __init__(self, value, offset=''):
         self.value = value.value
+        self.offset = offset
 
     def __repr__(self):
-        return f'Value("{self.value}")'
+        return self.offset + f'Value("{self.value}")'
 
     def __str__(self):
         return f'"{self.value}"'
+
+    def set_offset(self, offset=''):
+        self.offset = offset
+        try:
+            self.value.set_offset(offset + '\t')
+        except AttributeError:
+            pass
 
 
 class IntValue:
