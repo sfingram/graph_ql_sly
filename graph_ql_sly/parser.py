@@ -99,6 +99,29 @@ class GraphQLParser(Parser):
         GraphQLLexerString.tokens | \
         GraphQLLexerBlockString.tokens
 
+    # @_('document_start executable_definition')
+    # def document(self, p):
+    #     return p.document_start.definition.append(p.executable_definition)
+    #
+    # @_('document_start')
+    # def document(self, p):
+    #     return p.document_start
+    #
+    # @_('executable_definition')
+    # def document_start(self, p):
+    #     return Document(p.executable_definition)
+
+    @_('operation_definition')
+    def executable_definition(self, p):
+        return ExecutableDefinition(p.operation_definition)
+
+    @_(
+        'selection_set',
+        'QUERY selection_set'
+    )
+    def operation_definition(self, p):
+        return OperationDefinition(p.selection_set)
+
     @_('selection_set_start "}"')
     def selection_set(self, p):
         return p.selection_set_start
@@ -269,3 +292,12 @@ class GraphQLParser(Parser):
     @_('ESCAPED_CHAR')
     def string_character(self, p):
         return decode_escape(p.ESCAPED_CHAR)
+
+
+def parse_string(string_to_parse):
+    lexer = GraphQLLexer()
+    parser = GraphQLParser()
+    tokens = lexer.tokenize(string_to_parse)
+    parse_result = parser.parse(tokens)
+    parse_result.set_offset()
+    return parse_result

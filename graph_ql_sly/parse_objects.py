@@ -2,6 +2,7 @@
 contains definitions of the supplementary parse objects
 """
 
+INDENT = '  '
 
 class StringValue:
     """ StringValue """
@@ -16,18 +17,41 @@ class StringValue:
         return f'"{self.value}"'
 
 
+class Document:
+    """ Document """
+
+    def __init__(self, definition):
+        self.definitions = [definition]
+
+
 class Definition:
     """ Definition """
 
-    def __init__(self, definition):
+    def __init__(self, definition, offset=''):
         self.definition = definition
+        self.offset = offset
+
+    def __repr__(self):
+        return f'Definition(\n{INDENT}{self.offset}{self.definition!r}\n{self.offset})'
+
+    def set_offset(self, offset=''):
+        self.offset = offset
+        self.definition.set_offset(offset + f'{INDENT}')
 
 
 class ExecutableDefinition:
     """ ExecutableDefinition """
 
-    def __init__(self, definition):
+    def __init__(self, definition, offset=''):
         self.definition = definition
+        self.offset = offset
+
+    def __repr__(self):
+        return f'ExecutableDefinition(\n{INDENT}{self.offset}{self.definition!r}\n{self.offset})'
+
+    def set_offset(self, offset=''):
+        self.offset = offset
+        self.definition.set_offset(offset + f'{INDENT}')
 
 
 class OperationDefinition:
@@ -43,7 +67,15 @@ class OperationDefinition:
         self.offset = offset
 
     def __repr__(self):
-        return f'OperationDefinition(operation_type)'
+        return f'OperationDefinition(\n' + \
+            self.offset + f'{INDENT}operation_type={self.operation_type!r}, \n' +\
+            self.offset + f'{INDENT}name={self.name!r}, \n' + \
+            self.offset + f'{INDENT}selection_set={self.selection_set!r}\n' + \
+            self.offset + ')'
+
+    def set_offset(self, offset=''):
+        self.offset = offset
+        self.selection_set.set_offset(offset + f'{INDENT}')
 
 
 class SelectionSet:
@@ -54,13 +86,13 @@ class SelectionSet:
         self.offset = offset
 
     def __repr__(self):
-        selections_repr = f',\n{self.offset}\t'.join(i.__repr__() for i in self.selections)
-        return f'SelectionSet(\n{self.offset}\t{selections_repr}\n{self.offset})'
+        selections_repr = f',\n{self.offset}{INDENT}'.join(i.__repr__() for i in self.selections)
+        return f'SelectionSet(\n{self.offset}{INDENT}{selections_repr}\n{self.offset})'
 
     def set_offset(self, offset=''):
         self.offset = offset
         for selection in self.selections:
-            selection.set_offset(offset + '\t')
+            selection.set_offset(offset + f'{INDENT}')
 
 
 class Selection:
@@ -71,11 +103,11 @@ class Selection:
         self.offset = offset
 
     def __repr__(self):
-        return f'Selection(\n{self.offset}\t{self.field!r}\n{self.offset})'
+        return f'Selection(\n{self.offset}{INDENT}{self.field!r}\n{self.offset})'
 
     def set_offset(self, offset=''):
         self.offset = offset
-        self.field.set_offset(offset + '\t')
+        self.field.set_offset(offset + f'{INDENT}')
 
 
 class Field:
@@ -92,17 +124,17 @@ class Field:
 
     def __repr__(self):
         return f'Field(\n' + \
-            self.offset + f'\tname={self.name!r}, \n' +\
-            self.offset + f'\targuments={self.arguments!r}, \n' + \
-            self.offset + f'\tselection_set={self.selection_set!r}\n' + \
+            self.offset + f'{INDENT}name={self.name!r}, \n' +\
+            self.offset + f'{INDENT}arguments={self.arguments!r}, \n' + \
+            self.offset + f'{INDENT}selection_set={self.selection_set!r}\n' + \
             self.offset + ')'
 
     def set_offset(self, offset=''):
         self.offset = offset
         if self.arguments:
-            self.arguments.set_offset(offset + '\t')
+            self.arguments.set_offset(offset + f'{INDENT}')
         if self.selection_set:
-            self.selection_set.set_offset(offset + '\t')
+            self.selection_set.set_offset(offset + f'{INDENT}')
 
 
 class Arguments:
@@ -113,14 +145,14 @@ class Arguments:
         self.offset = ''
 
     def __repr__(self):
-        argument_repr = f',\n{self.offset}\t'.join(i.__repr__() for i in self.arguments)
-        return f'Arguments(\n{self.offset}\t{argument_repr}\n{self.offset})'
+        argument_repr = f',\n{self.offset}{INDENT}'.join(i.__repr__() for i in self.arguments)
+        return f'Arguments(\n{self.offset}{INDENT}{argument_repr}\n{self.offset})'
 
     def set_offset(self, offset=''):
         self.offset = offset
         if self.arguments:
             for argument in self.arguments:
-                argument.set_offset(offset + '\t')
+                argument.set_offset(offset + f'{INDENT}')
 
 
 class Argument:
@@ -132,12 +164,12 @@ class Argument:
         self.offset = ''
 
     def __repr__(self):
-        return f'Argument(\n{self.offset}\tname={self.name},\n{self.offset}\tvalue={self.value}\n{self.offset})'
+        return f'Argument(\n{self.offset}{INDENT}name={self.name},\n{self.offset}{INDENT}value={self.value}\n{self.offset})'
 
     def set_offset(self, offset=''):
         self.offset = offset
         try:
-            self.value.set_offset(offset + '\t')
+            self.value.set_offset(offset + f'{INDENT}')
         except AttributeError:
             pass
 
@@ -158,7 +190,7 @@ class Value:
     def set_offset(self, offset=''):
         self.offset = offset
         try:
-            self.value.set_offset(offset + '\t')
+            self.value.set_offset(offset + f'{INDENT}')
         except AttributeError:
             pass
 

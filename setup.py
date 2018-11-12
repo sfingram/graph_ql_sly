@@ -21,12 +21,9 @@ A GraphQL parser built using the SLY library.
       maintainer="Stephen Ingram",
       maintainer_email="stephenfroweingram@gmail.com",
       url="https://github.com/sfingram/graph_ql_sly",
-      packages=['sly'],
-      install_requires=[],
+      packages=['graph_ql_sly'],
+      install_requires=['sly'],
       tests_require=TEST_REQUIRE,
       extras_require={
           'test': TEST_REQUIRE,
-      },
-      classifiers=[
-          'Programming Language :: Python :: 3',
-      ])
+      })
