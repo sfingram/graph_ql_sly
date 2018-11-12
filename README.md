@@ -9,7 +9,7 @@ import graph_ql_sly.parser as gqp
 gqp.parse_string("""{
   human(id: "1000") {
     name
-    height(unit: FOOT)
+    height(unit: "FOOT")
   }
 }""")
 ```
